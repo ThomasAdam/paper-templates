@@ -2,21 +2,38 @@
 	<head>
 		<meta charset=utf-8 />
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<style>
-	#pagemock {
-		border-style: solid;
-		border-width: 1px;
-		width: 300px;
-		height: 400px;
-	}
-	#pagecontainer {
-		display: flex;
-	}
-	#pageform {
-		flex-grow: 1;
-		padding: 20;
-	}
-</style>	
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.0.4/jscolor.min.js"></script>
+		<style>
+			#pagemock {
+				border-style: solid;
+				border-width: 1px;
+				width: 300px;
+				height: 400px;
+			}
+			#pagecontainer {
+				display: flex;
+			}
+			#pageform {
+				flex-grow: 1;
+				padding: 20;
+			}
+			#ic-lm, #ic-rm, #ic-rl, #ic-tl {
+				display: inline-block;
+				padding: 1px;
+				margin: 2px;
+			}
+			#ic-label {
+				display: inline-block;
+				width: 120px;
+			}
+			#jci_rm, #jci_lm, #jci_rl, #jci_tl {
+				width: 80px;
+			}
+			button {
+				border: 0;
+				border-radius: 1px;
+			}
+		</style>
 	</head>
 	<body>
 		<h1>Page Template Generator</h1>
@@ -26,21 +43,130 @@
 				<canvas id="DemoCanvas" width="300" height="400"></canvas>
 			</div>
 			<div id="pageform">
-				<input type="checkbox" id="rmargin" name="rmargin" value="rmargin">Right Margin</input>	
+				<p>Margins:<p>
+				<input type="checkbox" id="rmargin" checked>Right Margin</input><br />
+				<input type="checkbox" id="lmargin" checked>Left Margin</input><br />
+				<input type="checkbox" id="lmargin2" checked>Double Margin</input><br />
+
+				<p>Colours:</p>
+				<span id="ic-label">Left Margin:</span>
+				<span id="ic-lm"><input id="jci_lm" class="jscolor {onFineChange:'update_lmargin(this)'}" value="#FF0000"></span>
+				<button style="background: #FF0000" type="button" id="btn_lmargin" value="FF0000">Reset</button>
+				<br />
+				<span id="ic-label">Right Margin:</span>
+				<span id="ic-rm"><input id="jci_rm" class="jscolor {onFineChange:'update_rmargin(this)'}" value="#BFBFBF"></span>
+				<button style="background: #BFBFBF" type="button" id="btn_rmargin" value="BFBFBF">Reset</button>
+				<br />
+				<span id="ic-label">Ruled Lines:</span>
+				<span id="ic-rl"><input id="jci_rl" class="jscolor {onFineChange:'update_ruled_lines(this)'}" value="#0000FF"></span>
+				<button style="background: #0000FF; color: white" type="button" id="btn_ruled_lines" value="0000FF">Reset</button>
+				<br />
+				<span id="ic-label">Top Line:</span>
+				<span id="ic-tl"><input id="jci_tl" class="jscolor {onFineChange:'update_top_line(this)'}" value="#80C080"></span>
+				<button style="background: #80C080" type="button" id="btn_top_line" value="80C080">Reset</button><br /><br />
+				<button id="btn_generate">Generate PDF Template</button>
 			</div>
+			<div id="generated_pdf"></div>
 		</div>
 	<script>
-		$('#rmargin').change(function() {
-			var canvas = document.getElementById('DemoCanvas');
-			var ctx = getCanvas();
-			if (this.checked) {
-				drawMargins(canvas, ctx, true, true);
-			} else {
-				drawMargins(canvas, ctx, true, false);
-			}
+		let thin_line = 0.5;
+		let rmargin_colour = "gray";
+		let lmargin_colour = "red";
+		let lines_colour = "blue";
+		let top_line_colour = "green";
+
+		$(document).ready(function() {
+			$('#latex-template').hide();
 		});
 
-		let thin_line = 0.5;
+		$('#btn_rmargin').click(function() {
+			var colour = '#' + this.value;
+			update_rmargin(this.value);
+			$('#jci_rm').css('background-color', colour);
+			$('#jci_rm').val(this.value);
+		});	
+
+		$('#btn_lmargin').click(function() {
+			var colour = '#' + this.value;
+			update_lmargin(this.value);
+			$('#jci_lm').css('background-color', colour);
+			$('#jci_lm').val(this.value);
+		});	
+
+		$('#btn_top_line').click(function() {
+			var colour = '#' + this.value;
+			update_top_line(this.value);
+			$('#jci_tl').css('background-color', colour);
+			$('#jci_tl').val(this.value);
+		});	
+
+		$('#btn_ruled_lines').click(function() {
+			var colour = '#' + this.value;
+			update_ruled_lines(this.value);
+			$('#jci_rl').css('background-color', colour);
+			$('#jci_rl').val(this.value);
+		});
+
+		$('#btn_generate').click(function() {
+			var template = $('#latex-template').html();
+			var html = template.replace(
+				'%%ruled_colour%%',
+				lines_colour
+			).replace('%%rmargin_colour%%',
+				rmargin_colour
+			).replace('%%lmargin_colour%%',
+				lmargin_colour
+			).replace('%%top_line_colour%%',
+				top_line_colour
+			);
+
+			$('#latex-template').html(html);
+		});
+
+		function update_rmargin(jscolor) {
+			rmargin_colour = '#' + jscolor;
+			drawAll();
+		}
+
+		function update_lmargin(jscolor) {
+			lmargin_colour = '#' + jscolor;
+			drawAll();
+		}
+
+		function update_ruled_lines(jscolor) {
+			lines_colour = '#' + jscolor;
+			drawAll();
+		}
+
+		function update_top_line(jscolor) {
+			top_line_colour = '#' + jscolor;
+			drawAll();
+		}
+
+		$('#rmargin').change(function() {
+			drawAll();
+		});
+
+		$('#lmargin').change(function() {
+			// If the left margin is not checked, remove the state of the
+			// double margin, since you wouldn't have one without the other.
+			if ( !$('#lmargin').is(":checked") ) {
+				$('#lmargin2').prop('checked', false);
+			}
+			
+			drawAll();
+		});
+
+		$('#lmargin2').change(function() {
+
+			// If the double margin is checked, set the state of the
+			// left margin, as you can't have one without the other.
+			if ($('#lmargin2').is(":checked")) {
+				$('#lmargin').prop('checked', true);
+			}
+
+			drawAll();
+		});
 
 		function getCanvas() {
 			var canvas = document.getElementById('DemoCanvas');
@@ -49,13 +175,13 @@
 			}
 			return null;
 		}
-		
-		function drawTopLine(ctx, howNarrow) {
+
+		function drawTopLine(canvas, ctx, howNarrow) {
 			// Give the first line on the page a different colour.
 			ctx.beginPath();
 			ctx.moveTo(0, howNarrow * 2);
 			ctx.lineTo(canvas.width, howNarrow * 2);
-			ctx.strokeStyle = 'green';
+			ctx.strokeStyle = top_line_colour;
 			ctx.stroke();
 		}
 
@@ -67,24 +193,30 @@
 			{
 				  ctx.moveTo(0, i);
 				  ctx.lineTo(canvas.width, i);
-				  ctx.strokeStyle = 'blue';
+				  ctx.strokeStyle = lines_colour;
 				  ctx.stroke();
 			}
 		}
 
-		function drawMargins(canvas, ctx, secondMargin, rightMargin) {
+		function drawMargins(canvas, ctx, leftMargin, secondMargin, rightMargin) {
 			// 10% of the height/width of the image for the margins.
+
 			let margin_width = ((canvas.width / 100) * 10) + thin_line;
-			ctx.beginPath();
-			ctx.moveTo(margin_width, 0);
-			ctx.lineTo(margin_width,canvas.height);
-			ctx.strokeStyle = 'red';
-			ctx.stroke();
+
+			if (leftMargin == true) {
+				ctx.beginPath();
+				ctx.moveTo(margin_width, 0);
+				ctx.lineTo(margin_width,canvas.height);
+				ctx.strokeStyle = lmargin_colour;
+				ctx.stroke();
+			}
 
 			// Optional second margin.
 			if (secondMargin == true) {
+				ctx.beginPath();
 				ctx.moveTo(margin_width - 5, 0);
-				ctx.lineTo(margin_width - 5,canvas.height);
+				ctx.lineTo(margin_width - 5, canvas.height);
+				ctx.strokeStyle = lmargin_colour;
 				ctx.stroke();
 			}
 
@@ -94,16 +226,63 @@
 				let right_margin = (canvas.width - margin_width) + thin_line;
 				ctx.moveTo(right_margin, 0);
 				ctx.lineTo(right_margin,canvas.height);
-				ctx.strokeStyle = 'gray';
+				ctx.strokeStyle = rmargin_colour;
 				ctx.stroke();
 			}
 		}
-		
-		var canvas = document.getElementById('DemoCanvas');
-		var ctx = getCanvas();
-		drawLines(canvas, ctx, 20);
-		drawTopLine(ctx, 20);
-		drawMargins(canvas, ctx, true, true);
+
+		function drawAll() {
+			var canvas = document.getElementById('DemoCanvas');
+			var ctx = getCanvas();
+
+			var lineWidth = 20;
+			var leftMargin = $('#lmargin').is(":checked");
+			var doubleMargin = $('#lmargin2').is(":checked");
+			var rightMargin = $('#rmargin').is(":checked");
+
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			drawLines(canvas, ctx, lineWidth);
+			drawTopLine(canvas, ctx, lineWidth);
+			drawMargins(canvas, ctx, leftMargin, doubleMargin, rightMargin);
+		}
+		drawAll();
 	</script>
+	<div id="latex-template">
+	% LaTeX PDF template generator for ruled pages.
+	%
+	% Generated from web controls.
+
+	\newcommand\paper{a4paper}
+	\newcommand\marginleft{30mm}
+	\newcommand\marginright{180mm}
+	\newcommand\linespacing{2.4}
+
+	\documentclass[\paper, 12pt]{article} % for A4 size paper
+	\usepackage{tikz}
+
+	\begin{document}
+	\pagestyle{empty}
+
+	\begin{tikzpicture}[remember picture, overlay]
+
+	\tikzset{normal lines/.style={%%ruled_colour%%, very thin}} 
+	\tikzset{margin line left/.style={%%lmargin_colour%%, thick}}
+	\tikzset{margin line right/.style={%%rmargin_colour%%, very thin}}
+
+	\node at (current page.south west){
+	  \begin{tikzpicture}[remember picture, overlay]
+
+	    % Change the second number to increase/decrease the line width on the page.
+	    \foreach \y in {1.5, \linespacing,...,27.6} 
+	      \draw[style=normal lines](0,\y) -- (21cm, \y); 
+	    \draw[style=margin line left] (\marginleft,0)--(\marginleft,297mm);
+	    \draw[style=margin line right] (\marginright,0)--(\marginright,297mm);
+
+	  \end{tikzpicture}
+	};
+	\end{tikzpicture}
+	\end{document}
+	</div>
 	</body>
 </html>
