@@ -4,8 +4,9 @@
 
 \newcommand\paper{a4paper}
 \newcommand\marginleft{30mm}
+\newcommand\marginleftN{32mm}
 \newcommand\marginright{180mm}
-\newcommand\linespacing{2.4}
+\newcommand\linespacing{2.1}
 
 \documentclass[\paper, 12pt]{article} % for A4 size paper
 \usepackage{tikz}
@@ -15,6 +16,7 @@
 
 \begin{tikzpicture}[remember picture, overlay]
 
+\tikzset{top line/.style={green, very thin}} 
 \tikzset{normal lines/.style={blue, very thin}} 
 \tikzset{margin line left/.style={red, thick}}
 \tikzset{margin line right/.style={gray, very thin}}
@@ -26,6 +28,7 @@
     \foreach \y in {1.5, \linespacing,...,27.6} 
       \draw[style=normal lines](0,\y) -- (21cm, \y); 
     \draw[style=margin line left] (\marginleft,0)--(\marginleft,297mm);
+    \draw[style=margin line left] (\marginleftN,0)--(\marginleftN,297mm);
     \draw[style=margin line right] (\marginright,0)--(\marginright,297mm);
 
   \end{tikzpicture}
