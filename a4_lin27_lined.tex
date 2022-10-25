@@ -10,9 +10,11 @@
 
 \documentclass[\paper, 12pt]{article} % for A4 size paper
 \usepackage{tikz}
+\usepackage{xcolor}
 
 \begin{document}
 \pagestyle{empty}
+\pagecolor{black!90}
 
 \begin{tikzpicture}[remember picture, overlay]
 
@@ -27,6 +29,8 @@
     % Change the second number to increase/decrease the line width on the page.
     \foreach \y in {1.5, \linespacing,...,27.6} 
       \draw[style=normal lines](0,\y) -- (21cm, \y); 
+
+    \draw[style=top line](0, 27.9) -- (21cm, 27.9);
     \draw[style=margin line left] (\marginleft,0)--(\marginleft,297mm);
     \draw[style=margin line left] (\marginleftN,0)--(\marginleftN,297mm);
     \draw[style=margin line right] (\marginright,0)--(\marginright,297mm);
